@@ -51,8 +51,14 @@ const schema = [
   `CREATE INDEX IF NOT EXISTS idx_books_status  ON books(status)`,
 ];
 
-for (const sql of schema) {
-  await db.execute(sql);
+let initialized = false;
+
+export async function initDb() {
+  if (initialized) return;
+  initialized = true;
+  for (const sql of schema) {
+    await db.execute(sql);
+  }
 }
 
 export function now() {

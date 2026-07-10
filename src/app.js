@@ -9,7 +9,8 @@ import notesRouter from "./routes/notes.js";
 import tagsRouter from "./routes/tags.js";
 import statsRouter from "./routes/stats.js";
 
-import "./db.js";
+import { initDb } from "./db.js";
+import { asyncHandler } from "./middleware/errorHandler.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -19,6 +20,15 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
 app.use(express.static(join(__dirname, "public")));
+
+app.get("/", (_req, res) => {
+  res.sendFile(join(__dirname, "public", "index.html"));
+});
+
+app.use("/api", asyncHandler(async (req, _res, next) => {
+  await initDb();
+  next();
+}));
 
 app.get("/api", (_req, res) => {
   res.json({

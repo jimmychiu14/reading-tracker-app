@@ -5,50 +5,56 @@ import { asyncHandler } from "../middleware/errorHandler.js";
 const router = Router();
 
 router.get("/", asyncHandler(async (_req, res) => {
-  const totalBooksResult = await db.execute("SELECT COUNT(*) AS count FROM books");
-  const totalBooks = Number(totalBooksResult.rows[0].count);
+  const [
+    totalBooksR,
+    statusR,
+    completedThisYearR,
+    totalPagesR,
+    totalNotesR,
+    avgRatingR,
+    recentlyCompletedR,
+    currentlyReadingR,
+    topTagsR,
+  ] = await Promise.all([
+    db.execute("SELECT COUNT(*) AS count FROM books"),
+    db.execute("SELECT status, COUNT(*) AS count FROM books GROUP BY status"),
+    db.execute(
+      `SELECT COUNT(*) AS count FROM books
+       WHERE status = 'completed' AND finished_at IS NOT NULL
+         AND strftime('%Y', finished_at) = strftime('%Y', 'now')`
+    ),
+    db.execute("SELECT COALESCE(SUM(current_page), 0) AS total FROM books"),
+    db.execute("SELECT COUNT(*) AS count FROM notes"),
+    db.execute(
+      `SELECT ROUND(AVG(rating), 2) AS avg FROM books
+       WHERE rating IS NOT NULL AND status = 'completed'`
+    ),
+    db.execute(
+      `SELECT id, title, author, finished_at, rating
+       FROM books WHERE status = 'completed'
+       ORDER BY finished_at DESC LIMIT 5`
+    ),
+    db.execute(
+      `SELECT id, title, author, current_page, total_pages
+       FROM books WHERE status = 'reading'
+       ORDER BY updated_at DESC`
+    ),
+    db.execute(
+      `SELECT t.name, COUNT(bt.book_id) AS count
+       FROM tags t
+       JOIN book_tags bt ON bt.tag_id = t.id
+       GROUP BY t.id
+       ORDER BY count DESC
+       LIMIT 10`
+    ),
+  ]);
 
-  const statusResult = await db.execute(
-    "SELECT status, COUNT(*) AS count FROM books GROUP BY status"
-  );
   const byStatus = {};
-  for (const row of statusResult.rows) {
+  for (const row of statusR.rows) {
     byStatus[row.status] = Number(row.count);
   }
 
-  const completedThisYearResult = await db.execute(
-    `SELECT COUNT(*) AS count FROM books
-     WHERE status = 'completed' AND finished_at IS NOT NULL
-       AND strftime('%Y', finished_at) = strftime('%Y', 'now')`
-  );
-  const completedThisYear = Number(completedThisYearResult.rows[0].count);
-
-  const totalPagesResult = await db.execute(
-    "SELECT COALESCE(SUM(current_page), 0) AS total FROM books"
-  );
-  const totalPagesRead = Number(totalPagesResult.rows[0].total);
-
-  const totalNotesResult = await db.execute("SELECT COUNT(*) AS count FROM notes");
-  const totalNotes = Number(totalNotesResult.rows[0].count);
-
-  const avgRatingResult = await db.execute(
-    `SELECT ROUND(AVG(rating), 2) AS avg FROM books
-     WHERE rating IS NOT NULL AND status = 'completed'`
-  );
-  const avgRating = avgRatingResult.rows[0].avg ?? null;
-
-  const recentlyCompletedResult = await db.execute(
-    `SELECT id, title, author, finished_at, rating
-     FROM books WHERE status = 'completed'
-     ORDER BY finished_at DESC LIMIT 5`
-  );
-
-  const currentlyReadingResult = await db.execute(
-    `SELECT id, title, author, current_page, total_pages
-     FROM books WHERE status = 'reading'
-     ORDER BY updated_at DESC`
-  );
-  const currentlyReading = currentlyReadingResult.rows.map((b) => ({
+  const currentlyReading = currentlyReadingR.rows.map((b) => ({
     id: Number(b.id),
     title: b.title,
     author: b.author,
@@ -60,34 +66,28 @@ router.get("/", asyncHandler(async (_req, res) => {
         : 0,
   }));
 
-  const topTagsResult = await db.execute(
-    `SELECT t.name, COUNT(bt.book_id) AS count
-     FROM tags t
-     JOIN book_tags bt ON bt.tag_id = t.id
-     GROUP BY t.id
-     ORDER BY count DESC
-     LIMIT 10`
-  );
-  const topTags = topTagsResult.rows.map((r) => ({
+  const topTags = topTagsR.rows.map((r) => ({
     name: r.name,
     count: Number(r.count),
   }));
 
   res.json({
-    total_books: totalBooks,
+    total_books: Number(totalBooksR.rows[0].count),
     by_status: {
       want_to_read: byStatus.want_to_read || 0,
       reading: byStatus.reading || 0,
       completed: byStatus.completed || 0,
     },
-    completed_this_year: completedThisYear,
-    total_pages_read: totalPagesRead,
-    total_notes: totalNotes,
-    avg_rating: avgRating,
+    completed_this_year: Number(completedThisYearR.rows[0].count),
+    total_pages_read: Number(totalPagesR.rows[0].total),
+    total_notes: Number(totalNotesR.rows[0].count),
+    avg_rating: avgRatingR.rows[0].avg ?? null,
     currently_reading: currentlyReading,
-    recently_completed: recentlyCompletedResult.rows.map(r => ({
-      ...r,
+    recently_completed: recentlyCompletedR.rows.map((r) => ({
       id: Number(r.id),
+      title: r.title,
+      author: r.author,
+      finished_at: r.finished_at,
       rating: r.rating ?? null,
     })),
     top_tags: topTags,
