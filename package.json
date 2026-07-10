@@ -1,0 +1,17 @@
+{
+  "name": "reading-tracker",
+  "version": "1.0.0",
+  "description": "讀書追蹤專案 - 書籍管理、閱讀進度、筆記、標籤與統計",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.14.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.0",
+    "morgan": "^1.10.0"
+  }
+}
