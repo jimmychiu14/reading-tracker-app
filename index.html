@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>讀書追蹤</title>
+  <style>
+    :root {
+      --bg: #f8f9fa;
+      --card: #fff;
+      --border: #e0e0e0;
+      --primary: #4a6fa5;
+      --primary-light: #6b8fc7;
+      --text: #333;
+      --muted: #777;
+      --green: #4caf50;
+      --orange: #ff9800;
+      --blue: #2196f3;
+      --red: #f44336;
+      --radius: 10px;
+      --shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* Header */
+    header {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow);
+    }
+    header h1 { font-size: 1.4rem; color: var(--primary); }
+    nav { display: flex; gap: 4px; }
+    nav button {
+      padding: 8px 18px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    nav button:hover { background: var(--bg); }
+    nav button.active { background: var(--primary); color: #fff; }
+
+    /* Main */
+    main { max-width: 960px; margin: 0 auto; padding: 24px; }
+
+    /* Cards */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+
+    /* Stats grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      text-align: center;
+    }
+    .stat-box .num { font-size: 1.8rem; font-weight: 700; color: var(--primary); }
+    .stat-box .label { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+
+    /* Badge */
+    .badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 500;
+    }
+    .badge.want_to_read { background: #e3f2fd; color: #1565c0; }
+    .badge.reading { background: #fff3e0; color: #e65100; }
+    .badge.completed { background: #e8f5e9; color: #2e7d32; }
+
+    /* Progress bar */
+    .progress-bar {
+      background: #eee;
+      border-radius: 10px;
+      height: 8px;
+      overflow: hidden;
+      margin: 8px 0;
+    }
+    .progress-bar .fill {
+      height: 100%;
+      background: var(--primary);
+      transition: width 0.3s;
+    }
+
+    /* Book grid */
+    .book-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .book-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .book-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+    .book-card h3 { font-size: 1.05rem; margin-bottom: 4px; }
+    .book-card .author { color: var(--muted); font-size: 0.88rem; margin-bottom: 8px; }
+    .book-card .pages { font-size: 0.82rem; color: var(--muted); }
+    .book-card .tags { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px; }
+    .tag-chip {
+      background: #f0f0f0;
+      border-radius: 16px;
+      padding: 2px 10px;
+      font-size: 0.76rem;
+      color: #555;
+    }
+
+    /* Filter bar */
+    .filter-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .filter-bar select, .filter-bar input, .filter-bar button {
+      padding: 8px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      outline: none;
+    }
+    .filter-bar input { flex: 1; min-width: 160px; }
+    .filter-bar select:focus, .filter-bar input:focus { border-color: var(--primary); }
+
+    /* Buttons */
+    .btn {
+      padding: 8px 18px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-danger { background: var(--red); color: #fff; }
+    .btn-success { background: var(--green); color: #fff; }
+    .btn-sm { padding: 5px 12px; font-size: 0.82rem; }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 200;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 40px 20px;
+      overflow-y: auto;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 28px;
+      width: 100%;
+      max-width: 520px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    }
+    .modal h2 { margin-bottom: 20px; font-size: 1.2rem; }
+    .modal .form-group { margin-bottom: 14px; }
+    .modal label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 4px; }
+    .modal input, .modal select, .modal textarea {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      outline: none;
+    }
+    .modal input:focus, .modal textarea:focus { border-color: var(--primary); }
+    .modal textarea { resize: vertical; min-height: 80px; }
+    .modal .actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+    .modal .row { display: flex; gap: 12px; }
+    .modal .row .form-group { flex: 1; }
+
+    /* Section title */
+    .section-title {
+      font-size: 1.1rem;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Note item */
+    .note-item {
+      border-left: 3px solid var(--primary);
+      padding: 12px 16px;
+      background: #fafafa;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 10px;
+    }
+    .note-item .meta { font-size: 0.8rem; color: var(--muted); margin-bottom: 4px; }
+    .note-item .content { font-size: 0.92rem; }
+    .note-item .actions { margin-top: 8px; display: flex; gap: 8px; }
+
+    /* Empty state */
+    .empty { text-align: center; color: var(--muted); padding: 40px; }
+
+    /* Currently reading list */
+    .reading-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .reading-item:last-child { border-bottom: none; }
+    .reading-item .info { flex: 1; }
+    .reading-item .info h4 { font-size: 0.95rem; }
+    .reading-item .info .pages { font-size: 0.8rem; color: var(--muted); }
+    .reading-item .progress-bar { width: 120px; margin: 0; }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 600px) {
+      header { flex-direction: column; gap: 10px; }
+      main { padding: 16px; }
+      .modal .row { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>📚 讀書追蹤</h1>
+  <nav>
+    <button data-tab="dashboard" class="active">儀表板</button>
+    <button data-tab="books">書籍</button>
+    <button data-tab="notes">筆記</button>
+    <button data-tab="tags">標籤</button>
+  </nav>
+</header>
+
+<main>
+  <!-- Dashboard -->
+  <div id="tab-dashboard" class="tab-content">
+    <div class="stats-grid" id="stats-grid"></div>
+    <div class="card">
+      <h3 class="section-title">📖 閱讀中</h3>
+      <div id="currently-reading"></div>
+    </div>
+    <div class="card">
+      <h3 class="section-title">✅ 最近完成</h3>
+      <div id="recently-completed"></div>
+    </div>
+    <div class="card">
+      <h3 class="section-title">🏷️ 熱門標籤</h3>
+      <div id="top-tags"></div>
+    </div>
+  </div>
+
+  <!-- Books -->
+  <div id="tab-books" class="tab-content hidden">
+    <div class="filter-bar">
+      <select id="book-filter-status">
+        <option value="">全部狀態</option>
+        <option value="want_to_read">想讀</option>
+        <option value="reading">閱讀中</option>
+        <option value="completed">已讀完</option>
+      </select>
+      <select id="book-filter-tag"></select>
+      <input type="text" id="book-search" placeholder="搜尋書名或作者...">
+      <button class="btn btn-primary" onclick="openBookModal()">＋ 新增書籍</button>
+    </div>
+    <div class="book-grid" id="book-grid"></div>
+  </div>
+
+  <!-- Notes -->
+  <div id="tab-notes" class="tab-content hidden">
+    <div class="filter-bar">
+      <select id="note-filter-book"><option value="">全部書籍</option></select>
+      <button class="btn btn-primary" onclick="openNoteModal()">＋ 新增筆記</button>
+    </div>
+    <div id="note-list"></div>
+  </div>
+
+  <!-- Tags -->
+  <div id="tab-tags" class="tab-content hidden">
+    <div class="filter-bar">
+      <input type="text" id="tag-input" placeholder="輸入標籤名稱..." style="flex:1;max-width:300px">
+      <button class="btn btn-primary" onclick="addTag()">＋ 新增標籤</button>
+    </div>
+    <div id="tag-list"></div>
+  </div>
+</main>
+
+<!-- Book Modal -->
+<div class="modal-overlay" id="book-modal">
+  <div class="modal">
+    <h2 id="book-modal-title">新增書籍</h2>
+    <input type="hidden" id="book-id">
+    <div class="form-group">
+      <label>書名 *</label>
+      <input type="text" id="book-title">
+    </div>
+    <div class="form-group">
+      <label>作者</label>
+      <input type="text" id="book-author">
+    </div>
+    <div class="row">
+      <div class="form-group">
+        <label>總頁數</label>
+        <input type="number" id="book-total-pages" min="0" value="0">
+      </div>
+      <div class="form-group">
+        <label>當前頁數</label>
+        <input type="number" id="book-current-page" min="0" value="0">
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-group">
+        <label>狀態</label>
+        <select id="book-status">
+          <option value="want_to_read">想讀</option>
+          <option value="reading">閱讀中</option>
+          <option value="completed">已讀完</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>評分 (1-5)</label>
+        <input type="number" id="book-rating" min="1" max="5" placeholder="未評分">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>標籤（逗號分隔）</label>
+      <input type="text" id="book-tags" placeholder="例如：自我成長, 心理學">
+    </div>
+    <div class="form-group">
+      <label>ISBN</label>
+      <input type="text" id="book-isbn">
+    </div>
+    <div class="actions">
+      <button class="btn btn-outline" onclick="closeModal('book-modal')">取消</button>
+      <button class="btn btn-primary" onclick="saveBook()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Note Modal -->
+<div class="modal-overlay" id="note-modal">
+  <div class="modal">
+    <h2 id="note-modal-title">新增筆記</h2>
+    <input type="hidden" id="note-id">
+    <div class="form-group">
+      <label>書籍 *</label>
+      <select id="note-book-id"></select>
+    </div>
+    <div class="form-group">
+      <label>頁碼</label>
+      <input type="number" id="note-page" min="0" placeholder="選填">
+    </div>
+    <div class="form-group">
+      <label>內容 *</label>
+      <textarea id="note-content"></textarea>
+    </div>
+    <div class="actions">
+      <button class="btn btn-outline" onclick="closeModal('note-modal')">取消</button>
+      <button class="btn btn-primary" onclick="saveNote()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Book Detail Modal -->
+<div class="modal-overlay" id="detail-modal">
+  <div class="modal" style="max-width:600px">
+    <div id="detail-content"></div>
+  </div>
+</div>
+
+<script>
+const API = '';
+const STATUS_LABELS = { want_to_read: '想讀', reading: '閱讀中', completed: '已讀完' };
+
+async function api(path, opts = {}) {
+  const res = await fetch(API + path, {
+    headers: { 'Content-Type': 'application/json' },
+    ...opts,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: '請求失敗' }));
+    throw new Error(err.error);
+  }
+  return res.status === 204 ? null : res.json();
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s ?? '';
+  return d.innerHTML;
+}
+
+function progressBar(pct) {
+  return `<div class="progress-bar"><div class="fill" style="width:${pct}%"></div></div>`;
+}
+
+function tagChips(tags) {
+  return (tags || []).map(t => `<span class="tag-chip">${esc(t.name)}</span>`).join('');
+}
+
+// Tab navigation
+document.querySelectorAll('nav button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+    document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
+    if (btn.dataset.tab === 'dashboard') loadDashboard();
+    if (btn.dataset.tab === 'books') loadBooks();
+    if (btn.dataset.tab === 'notes') loadNotes();
+    if (btn.dataset.tab === 'tags') loadTags();
+  });
+});
+
+// Dashboard
+async function loadDashboard() {
+  const stats = await api('/api/stats');
+  const grid = document.getElementById('stats-grid');
+  grid.innerHTML = `
+    <div class="stat-box"><div class="num">${stats.total_books}</div><div class="label">總書數</div></div>
+    <div class="stat-box"><div class="num">${stats.by_status.want_to_read}</div><div class="label">想讀</div></div>
+    <div class="stat-box"><div class="num">${stats.by_status.reading}</div><div class="label">閱讀中</div></div>
+    <div class="stat-box"><div class="num">${stats.by_status.completed}</div><div class="label">已讀完</div></div>
+    <div class="stat-box"><div class="num">${stats.completed_this_year}</div><div class="label">今年完成</div></div>
+    <div class="stat-box"><div class="num">${stats.total_pages_read}</div><div class="label">已讀頁數</div></div>
+    <div class="stat-box"><div class="num">${stats.total_notes}</div><div class="label">筆記數</div></div>
+    <div class="stat-box"><div class="num">${stats.avg_rating ?? '—'}</div><div class="label">平均評分</div></div>
+  `;
+
+  const cr = document.getElementById('currently-reading');
+  if (stats.currently_reading.length === 0) {
+    cr.innerHTML = '<div class="empty">目前沒有閱讀中的書籍</div>';
+  } else {
+    cr.innerHTML = stats.currently_reading.map(b => `
+      <div class="reading-item">
+        <div class="info">
+          <h4>${esc(b.title)}</h4>
+          <div class="pages">${b.current_page}/${b.total_pages} 頁 (${b.progress}%)</div>
+        </div>
+        ${progressBar(b.progress)}
+      </div>
+    `).join('');
+  }
+
+  const rc = document.getElementById('recently-completed');
+  if (stats.recently_completed.length === 0) {
+    rc.innerHTML = '<div class="empty">尚無完成的書籍</div>';
+  } else {
+    rc.innerHTML = stats.recently_completed.map(b => `
+      <div class="reading-item">
+        <div class="info">
+          <h4>${esc(b.title)} ${b.rating ? '⭐'.repeat(b.rating) : ''}</h4>
+          <div class="pages">${esc(b.author)} · ${b.finished_at ? new Date(b.finished_at).toLocaleDateString() : ''}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  const tt = document.getElementById('top-tags');
+  if (stats.top_tags.length === 0) {
+    tt.innerHTML = '<div class="empty">尚無標籤</div>';
+  } else {
+    tt.innerHTML = stats.top_tags.map(t => `<span class="tag-chip" style="font-size:0.9rem;padding:4px 14px">${esc(t.name)} (${t.count})</span>`).join(' ');
+  }
+}
+
+// Books
+let allTags = [];
+
+async function loadBooks() {
+  const status = document.getElementById('book-filter-status').value;
+  const tag = document.getElementById('book-filter-tag').value;
+  const q = document.getElementById('book-search').value;
+  const params = new URLSearchParams();
+  if (status) params.set('status', status);
+  if (tag) params.set('tag', tag);
+  if (q) params.set('q', q);
+
+  const books = await api('/api/books?' + params.toString());
+  const grid = document.getElementById('book-grid');
+  if (books.length === 0) {
+    grid.innerHTML = '<div class="empty">沒有符合的書籍</div>';
+    return;
+  }
+  grid.innerHTML = books.map(b => `
+    <div class="book-card" onclick="openDetail(${b.id})">
+      <h3>${esc(b.title)}</h3>
+      <div class="author">${esc(b.author)}</div>
+      <span class="badge ${b.status}">${STATUS_LABELS[b.status]}</span>
+      ${b.total_pages > 0 ? `<div class="pages" style="margin-top:8px">${b.current_page}/${b.total_pages} 頁 (${b.progress}%)</div>${progressBar(b.progress)}` : ''}
+      <div class="tags">${tagChips(b.tags)}</div>
+    </div>
+  `).join('');
+}
+
+async function loadTagFilter() {
+  const tags = await api('/api/tags');
+  allTags = tags;
+  const sel = document.getElementById('book-filter-tag');
+  sel.innerHTML = '<option value="">全部標籤</option>' + tags.map(t => `<option value="${esc(t.name)}">${esc(t.name)}</option>`).join('');
+}
+
+document.getElementById('book-filter-status').addEventListener('change', loadBooks);
+document.getElementById('book-filter-tag').addEventListener('change', loadBooks);
+document.getElementById('book-search').addEventListener('input', loadBooks);
+
+function openBookModal(book = null) {
+  document.getElementById('book-modal-title').textContent = book ? '編輯書籍' : '新增書籍';
+  document.getElementById('book-id').value = book?.id ?? '';
+  document.getElementById('book-title').value = book?.title ?? '';
+  document.getElementById('book-author').value = book?.author ?? '';
+  document.getElementById('book-total-pages').value = book?.total_pages ?? 0;
+  document.getElementById('book-current-page').value = book?.current_page ?? 0;
+  document.getElementById('book-status').value = book?.status ?? 'want_to_read';
+  document.getElementById('book-rating').value = book?.rating ?? '';
+  document.getElementById('book-tags').value = book?.tags?.map(t => t.name).join(', ') ?? '';
+  document.getElementById('book-isbn').value = book?.isbn ?? '';
+  document.getElementById('book-modal').classList.add('active');
+}
+
+async function saveBook() {
+  const id = document.getElementById('book-id').value;
+  const tags = document.getElementById('book-tags').value
+    .split(',').map(t => t.trim()).filter(Boolean);
+  const data = {
+    title: document.getElementById('book-title').value.trim(),
+    author: document.getElementById('book-author').value.trim(),
+    isbn: document.getElementById('book-isbn').value.trim(),
+    total_pages: parseInt(document.getElementById('book-total-pages').value) || 0,
+    current_page: parseInt(document.getElementById('book-current-page').value) || 0,
+    status: document.getElementById('book-status').value,
+    rating: document.getElementById('book-rating').value ? parseInt(document.getElementById('book-rating').value) : null,
+    tags,
+  };
+  if (!data.title) { alert('書名為必填'); return; }
+  try {
+    if (id) {
+      await api('/api/books/' + id, { method: 'PUT', body: JSON.stringify(data) });
+    } else {
+      await api('/api/books', { method: 'POST', body: JSON.stringify(data) });
+    }
+    closeModal('book-modal');
+    loadBooks();
+    loadTagFilter();
+  } catch (e) { alert(e.message); }
+}
+
+async function deleteBook(id) {
+  if (!confirm('確定要刪除這本書嗎？相關筆記也會一併刪除。')) return;
+  await api('/api/books/' + id, { method: 'DELETE' });
+  closeModal('detail-modal');
+  loadBooks();
+}
+
+// Book detail
+async function openDetail(id) {
+  const book = await api('/api/books/' + id);
+  const notes = await api('/api/notes?book_id=' + id);
+  const c = document.getElementById('detail-content');
+  c.innerHTML = `
+    <h2>${esc(book.title)}</h2>
+    <p style="color:var(--muted);margin-bottom:12px">${esc(book.author)}</p>
+    <div style="margin-bottom:12px">
+      <span class="badge ${book.status}">${STATUS_LABELS[book.status]}</span>
+      ${book.rating ? '⭐'.repeat(book.rating) : ''}
+      <span style="margin-left:8px;font-size:0.85rem;color:var(--muted)">${book.current_page}/${book.total_pages} 頁 (${book.progress}%)</span>
+    </div>
+    ${book.total_pages > 0 ? progressBar(book.progress) : ''}
+    <div style="margin:12px 0">${tagChips(book.tags)}</div>
+    ${book.isbn ? `<div style="font-size:0.85rem;color:var(--muted);margin-bottom:12px">ISBN: ${esc(book.isbn)}</div>` : ''}
+
+    <div style="margin:20px 0 12px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-primary btn-sm" onclick='openBookModal(${JSON.stringify(book).replace(/'/g,"&#39;")})'>編輯</button>
+      <button class="btn btn-outline btn-sm" onclick="quickProgress(${book.id}, ${book.current_page}, ${book.total_pages})">更新進度</button>
+      <button class="btn btn-success btn-sm" onclick="addNoteForBook(${book.id})">加筆記</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteBook(${book.id})">刪除</button>
+    </div>
+
+    <h3 style="margin-top:20px;margin-bottom:12px">📝 筆記 (${notes.length})</h3>
+    <div id="detail-notes">
+      ${notes.length === 0 ? '<div class="empty">尚無筆記</div>' : notes.map(n => `
+        <div class="note-item">
+          <div class="meta">${n.page != null ? '第 ' + n.page + ' 頁 · ' : ''}${new Date(n.created_at).toLocaleDateString()}</div>
+          <div class="content">${esc(n.content)}</div>
+          <div class="actions">
+            <button class="btn btn-outline btn-sm" onclick="editNote(${n.id})">編輯</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteNote(${n.id}, ${book.id})">刪除</button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+    <div style="margin-top:20px;text-align:right">
+      <button class="btn btn-outline" onclick="closeModal('detail-modal')">關閉</button>
+    </div>
+  `;
+  document.getElementById('detail-modal').classList.add('active');
+}
+
+function quickProgress(id, current, total) {
+  const input = prompt(`更新進度 (目前 ${current}/${total} 頁):`, current);
+  if (input === null) return;
+  const page = parseInt(input);
+  if (isNaN(page) || page < 0) { alert('請輸入有效頁數'); return; }
+  api('/api/books/' + id + '/progress', { method: 'PATCH', body: JSON.stringify({ current_page: page }) })
+    .then(() => openDetail(id))
+    .catch(e => alert(e.message));
+}
+
+function addNoteForBook(bookId) {
+  closeModal('detail-modal');
+  openNoteModal(null, bookId);
+}
+
+// Notes
+let allBooks = [];
+
+async function loadNotes() {
+  const bookId = document.getElementById('note-filter-book').value;
+  const params = bookId ? '?book_id=' + bookId : '';
+  const notes = await api('/api/notes' + params);
+  const list = document.getElementById('note-list');
+  if (notes.length === 0) {
+    list.innerHTML = '<div class="empty">尚無筆記</div>';
+    return;
+  }
+  const bookMap = {};
+  allBooks.forEach(b => bookMap[b.id] = b);
+  list.innerHTML = notes.map(n => {
+    const book = bookMap[n.book_id];
+    return `
+      <div class="note-item">
+        <div class="meta">
+          <strong>${esc(book?.title || '?')}</strong>
+          ${n.page != null ? ' · 第 ' + n.page + ' 頁' : ''}
+          · ${new Date(n.created_at).toLocaleDateString()}
+        </div>
+        <div class="content">${esc(n.content)}</div>
+        <div class="actions">
+          <button class="btn btn-outline btn-sm" onclick="editNote(${n.id})">編輯</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteNote(${n.id})">刪除</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function loadBookFilter() {
+  allBooks = await api('/api/books');
+  const sel = document.getElementById('note-filter-book');
+  sel.innerHTML = '<option value="">全部書籍</option>' + allBooks.map(b => `<option value="${b.id}">${esc(b.title)}</option>`).join('');
+  const noteSel = document.getElementById('note-book-id');
+  noteSel.innerHTML = '<option value="">請選擇</option>' + allBooks.map(b => `<option value="${b.id}">${esc(b.title)}</option>`).join('');
+}
+
+document.getElementById('note-filter-book').addEventListener('change', loadNotes);
+
+function openNoteModal(note = null, presetBookId = null) {
+  document.getElementById('note-modal-title').textContent = note ? '編輯筆記' : '新增筆記';
+  document.getElementById('note-id').value = note?.id ?? '';
+  loadBookFilter().then(() => {
+    document.getElementById('note-book-id').value = note?.book_id ?? presetBookId ?? '';
+  });
+  document.getElementById('note-page').value = note?.page ?? '';
+  document.getElementById('note-content').value = note?.content ?? '';
+  document.getElementById('note-modal').classList.add('active');
+}
+
+async function saveNote() {
+  const id = document.getElementById('note-id').value;
+  const data = {
+    book_id: parseInt(document.getElementById('note-book-id').value),
+    content: document.getElementById('note-content').value.trim(),
+    page: document.getElementById('note-page').value ? parseInt(document.getElementById('note-page').value) : null,
+  };
+  if (!data.book_id) { alert('請選擇書籍'); return; }
+  if (!data.content) { alert('內容為必填'); return; }
+  try {
+    if (id) {
+      await api('/api/notes/' + id, { method: 'PUT', body: JSON.stringify(data) });
+    } else {
+      await api('/api/notes', { method: 'POST', body: JSON.stringify(data) });
+    }
+    closeModal('note-modal');
+    loadNotes();
+  } catch (e) { alert(e.message); }
+}
+
+async function editNote(id) {
+  const note = await api('/api/notes/' + id);
+  closeModal('detail-modal');
+  openNoteModal(note);
+}
+
+async function deleteNote(id, bookId) {
+  if (!confirm('確定要刪除此筆記？')) return;
+  await api('/api/notes/' + id, { method: 'DELETE' });
+  if (bookId) openDetail(bookId);
+  else loadNotes();
+}
+
+// Tags
+async function loadTags() {
+  const tags = await api('/api/tags');
+  const list = document.getElementById('tag-list');
+  if (tags.length === 0) {
+    list.innerHTML = '<div class="empty">尚無標籤</div>';
+    return;
+  }
+  list.innerHTML = tags.map(t => `
+    <div class="reading-item">
+      <div class="info">
+        <h4>${esc(t.name)}</h4>
+        <div class="pages">${t.book_count} 本書</div>
+      </div>
+      <button class="btn btn-danger btn-sm" onclick="deleteTag(${t.id}, '${esc(t.name)}')">刪除</button>
+    </div>
+  `).join('');
+}
+
+async function addTag() {
+  const name = document.getElementById('tag-input').value.trim();
+  if (!name) { alert('請輸入標籤名稱'); return; }
+  try {
+    await api('/api/tags', { method: 'POST', body: JSON.stringify({ name }) });
+    document.getElementById('tag-input').value = '';
+    loadTags();
+  } catch (e) { alert(e.message); }
+}
+
+async function deleteTag(id, name) {
+  if (!confirm(`確定要刪除標籤「${name}」？`)) return;
+  await api('/api/tags/' + id, { method: 'DELETE' });
+  loadTags();
+}
+
+// Modal helpers
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+}
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('active'); });
+});
+
+// Init
+loadDashboard();
+loadTagFilter();
+loadBookFilter();
+</script>
+</body>
+</html>
