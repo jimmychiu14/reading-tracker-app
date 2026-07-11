@@ -104,6 +104,16 @@
         <option value="completed">已讀完</option>
       </select>
       <select id="book-filter-tag"></select>
+      <select id="book-sort" aria-label="書籍排序">
+        <option value="updated_desc">最近更新</option>
+        <option value="created_desc">最新新增</option>
+        <option value="created_asc">最早新增</option>
+        <option value="title_asc">書名 A→Z</option>
+        <option value="title_desc">書名 Z→A</option>
+        <option value="progress_desc">閱讀進度高→低</option>
+        <option value="progress_asc">閱讀進度低→高</option>
+        <option value="rating_desc">評分高→低</option>
+      </select>
       <input type="text" id="book-search" placeholder="搜尋書名或作者...">
       <button class="btn btn-primary" onclick="openBookModal()">＋ 新增書籍</button>
     </div>
@@ -114,6 +124,12 @@
   <div id="tab-notes" class="tab-content hidden">
     <div class="filter-bar">
       <select id="note-filter-book"><option value="">全部書籍</option></select>
+      <select id="note-sort" aria-label="筆記排序">
+        <option value="created_desc">最新建立</option>
+        <option value="created_asc">最早建立</option>
+        <option value="page_asc">頁碼小→大</option>
+        <option value="page_desc">頁碼大→小</option>
+      </select>
       <button class="btn btn-primary" onclick="openNoteModal()">＋ 新增筆記</button>
     </div>
     <div id="note-list"></div>
@@ -387,10 +403,12 @@ let allTags = [];
 async function loadBooks() {
   const status = document.getElementById('book-filter-status').value;
   const tag = document.getElementById('book-filter-tag').value;
+  const sort = document.getElementById('book-sort').value;
   const q = document.getElementById('book-search').value;
   const params = new URLSearchParams();
   if (status) params.set('status', status);
   if (tag) params.set('tag', tag);
+  if (sort) params.set('sort', sort);
   if (q) params.set('q', q);
 
   const books = await api('/api/books?' + params.toString());
@@ -419,6 +437,7 @@ async function loadTagFilter() {
 
 document.getElementById('book-filter-status').addEventListener('change', loadBooks);
 document.getElementById('book-filter-tag').addEventListener('change', loadBooks);
+document.getElementById('book-sort').addEventListener('change', loadBooks);
 document.getElementById('book-search').addEventListener('input', loadBooks);
 
 function openBookModal(book = null) {
@@ -585,8 +604,11 @@ let allBooks = [];
 
 async function loadNotes() {
   const bookId = document.getElementById('note-filter-book').value;
-  const params = bookId ? '?book_id=' + bookId : '';
-  const notes = await api('/api/notes' + params);
+  const sort = document.getElementById('note-sort').value;
+  const params = new URLSearchParams();
+  if (bookId) params.set('book_id', bookId);
+  if (sort) params.set('sort', sort);
+  const notes = await api('/api/notes?' + params.toString());
   const list = document.getElementById('note-list');
   if (notes.length === 0) {
     list.innerHTML = '<div class="empty">尚無筆記</div>';
@@ -622,6 +644,7 @@ async function loadBookFilter() {
 }
 
 document.getElementById('note-filter-book').addEventListener('change', loadNotes);
+document.getElementById('note-sort').addEventListener('change', loadNotes);
 
 function openNoteModal(note = null, presetBookId = null) {
   document.getElementById('note-modal-title').textContent = note ? '編輯筆記' : '新增筆記';

@@ -3,6 +3,12 @@ import { db, now } from "../db.js";
 import { badRequest, notFoundError, asyncHandler } from "../middleware/errorHandler.js";
 
 const router = Router();
+const NOTE_SORTS = {
+  created_desc: "created_at DESC",
+  created_asc: "created_at ASC",
+  page_asc: "page IS NULL ASC, page ASC",
+  page_desc: "page IS NULL ASC, page DESC",
+};
 
 async function checkBook(bookId) {
   const result = await db.execute({
@@ -13,14 +19,14 @@ async function checkBook(bookId) {
 }
 
 router.get("/", asyncHandler(async (req, res) => {
-  const { book_id } = req.query;
+  const { book_id, sort = "created_desc" } = req.query;
   let sql = "SELECT * FROM notes";
   const args = [];
   if (book_id) {
     sql += " WHERE book_id = ?";
     args.push(book_id);
   }
-  sql += " ORDER BY created_at DESC";
+  sql += ` ORDER BY ${NOTE_SORTS[sort] || NOTE_SORTS.created_desc}`;
   const result = await db.execute({ sql, args });
   res.json(result.rows);
 }));

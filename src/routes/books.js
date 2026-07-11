@@ -5,6 +5,16 @@ import { badRequest, notFoundError, asyncHandler } from "../middleware/errorHand
 const router = Router();
 
 const VALID_STATUSES = ["want_to_read", "reading", "completed"];
+const BOOK_SORTS = {
+  updated_desc: "books.updated_at DESC",
+  created_desc: "books.created_at DESC",
+  created_asc: "books.created_at ASC",
+  title_asc: "books.title COLLATE NOCASE ASC",
+  title_desc: "books.title COLLATE NOCASE DESC",
+  progress_desc: "CASE WHEN books.total_pages > 0 THEN CAST(books.current_page AS REAL) / books.total_pages ELSE 0 END DESC",
+  progress_asc: "CASE WHEN books.total_pages > 0 THEN CAST(books.current_page AS REAL) / books.total_pages ELSE 0 END ASC",
+  rating_desc: "books.rating IS NULL ASC, books.rating DESC",
+};
 
 async function attachTags(book) {
   if (!book) return book;
@@ -67,7 +77,7 @@ function syncStatusDates(book, prevStatus) {
 }
 
 router.get("/", asyncHandler(async (req, res) => {
-  const { status, tag, q } = req.query;
+  const { status, tag, q, sort = "updated_desc" } = req.query;
   let sql = "SELECT books.* FROM books";
   const conditions = [];
   const args = [];
@@ -88,7 +98,7 @@ router.get("/", asyncHandler(async (req, res) => {
   if (conditions.length) {
     sql += " WHERE " + conditions.join(" AND ");
   }
-  sql += " ORDER BY updated_at DESC";
+  sql += ` ORDER BY ${BOOK_SORTS[sort] || BOOK_SORTS.updated_desc}`;
 
   const result = await db.execute({ sql, args });
   const books = await Promise.all(result.rows.map(attachTags));
