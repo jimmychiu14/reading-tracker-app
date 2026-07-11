@@ -11,7 +11,7 @@
     body::before { content:""; position:fixed; z-index:-1; right:-11rem; bottom:-12rem; width:34rem; height:34rem; border-radius:50%; background:rgba(220,234,223,.65); filter:blur(12px); }
     header { position:sticky; top:0; z-index:100; display:flex; align-items:center; justify-content:space-between; max-width:1180px; margin:auto; padding:18px 28px; background:rgba(255,253,248,.82); border:1px solid rgba(255,255,255,.7); border-top:0; border-radius:0 0 22px 22px; backdrop-filter:blur(16px); box-shadow:0 6px 24px rgba(49,57,45,.05); }
     header h1 { display:flex; align-items:center; gap:9px; color:var(--forest-dark); font-family:Georgia, "Noto Serif TC", serif; font-size:1.4rem; letter-spacing:.04em; }
-    nav { display:flex; gap:5px; padding:4px; background:#f0ede5; border-radius:12px; }
+    .header-actions { display:flex; align-items:center; gap:10px; } nav { display:flex; gap:5px; padding:4px; background:#f0ede5; border-radius:12px; }
     nav button { border:0; background:transparent; border-radius:9px; color:var(--muted); cursor:pointer; font:600 .88rem inherit; padding:8px 15px; transition:.2s ease; }
     nav button:hover { color:var(--forest); }
     nav button.active { background:var(--paper); color:var(--forest-dark); box-shadow:0 2px 8px rgba(38,56,44,.12); }
@@ -24,6 +24,8 @@
     .stats-grid { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:12px; margin-bottom:22px; }
     .stat-box { position:relative; overflow:hidden; min-height:112px; padding:18px; background:rgba(255,253,248,.9); border:1px solid rgba(231,225,213,.9); border-radius:15px; box-shadow:0 6px 20px rgba(49,57,45,.045); transition:transform .2s ease, box-shadow .2s ease; }
     .stat-box:hover { transform:translateY(-3px); box-shadow:var(--shadow); }
+    .stat-link { width:100%; border:0; text-align:left; color:inherit; cursor:pointer; font:inherit; }
+    .stat-link:focus-visible, .dashboard-book-link:focus-visible, .tag-link:focus-visible { outline:3px solid rgba(31,90,73,.3); outline-offset:3px; }
     .stat-box:nth-child(2) .num, .stat-box:nth-child(3) .num { color:var(--blue); } .stat-box:nth-child(4) .num { color:var(--forest); } .stat-box:nth-child(5) .num { color:var(--coral); }
     .stat-box .num { color:var(--forest-dark); font:700 1.85rem Georgia, serif; line-height:1.05; }
     .stat-box .label { margin-top:9px; color:var(--muted); font-size:.8rem; font-weight:600; }
@@ -41,10 +43,12 @@
     .filter-bar { display:flex; flex-wrap:wrap; gap:9px; align-items:center; padding:14px; margin-bottom:19px; background:rgba(255,253,248,.72); border:1px solid var(--line); border-radius:15px; }
     .filter-bar select, .filter-bar input { min-height:39px; padding:8px 12px; border:1px solid #dcd5c8; border-radius:10px; outline:0; background:#fffefb; color:var(--ink); font:inherit; font-size:.88rem; } .filter-bar input { flex:1; min-width:180px; } .filter-bar select:focus, .filter-bar input:focus, .modal input:focus, .modal textarea:focus, .modal select:focus { border-color:var(--forest); box-shadow:0 0 0 3px rgba(31,90,73,.12); }
     .btn { border:1px solid transparent; border-radius:10px; cursor:pointer; font:700 .86rem inherit; padding:9px 15px; transition:.18s ease; } .btn:hover { transform:translateY(-1px); } .btn-primary { background:var(--forest); color:#fff; box-shadow:0 5px 12px rgba(31,90,73,.18); } .btn-primary:hover { background:var(--forest-dark); } .btn-danger { background:#fff0ec; border-color:#f2cdc3; color:#a5452c; } .btn-success { background:#dceee1; color:#205c42; } .btn-sm { padding:5px 10px; font-size:.78rem; } .btn-outline { border-color:#d8d1c5; background:transparent; color:var(--ink); }
+    .lock-button { padding:8px 11px; border:1px solid #d8d1c5; border-radius:10px; background:rgba(255,253,248,.7); color:var(--muted); cursor:pointer; font:700 .8rem inherit; } .lock-button:hover { color:var(--forest-dark); border-color:var(--forest); }
     .modal-overlay { position:fixed; inset:0; z-index:200; display:none; align-items:flex-start; justify-content:center; padding:52px 20px; overflow-y:auto; background:rgba(24,41,32,.42); backdrop-filter:blur(5px); } .modal-overlay.active { display:flex; } .modal { width:100%; max-width:520px; padding:28px; background:var(--paper); border:1px solid rgba(255,255,255,.5); border-radius:20px; box-shadow:0 24px 65px rgba(20,35,27,.27); } .modal h2 { margin-bottom:20px; font-family:Georgia, "Noto Serif TC", serif; font-size:1.35rem; } .modal .form-group { margin-bottom:14px; } .modal label { display:block; margin-bottom:5px; color:var(--muted); font-size:.83rem; font-weight:700; } .modal input, .modal select, .modal textarea { width:100%; padding:9px 11px; border:1px solid #dcd5c8; border-radius:10px; outline:0; background:#fffefb; font:inherit; font-size:.9rem; } .modal textarea { min-height:95px; resize:vertical; } .modal .actions { display:flex; justify-content:flex-end; gap:9px; margin-top:21px; } .modal .row { display:flex; gap:12px; } .modal .row .form-group { flex:1; }
     .note-item { padding:14px 16px; margin-bottom:10px; border-left:3px solid var(--gold); border-radius:0 11px 11px 0; background:#fbf8f0; } .note-item .meta { margin-bottom:5px; color:var(--muted); font-size:.8rem; } .note-item .content { white-space:pre-wrap; font-size:.92rem; } .note-item .actions { display:flex; gap:7px; margin-top:10px; }
-    .empty { padding:36px 20px; color:var(--muted); text-align:center; } .reading-item { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:13px 0; border-bottom:1px solid var(--line); } .reading-item:last-child { border-bottom:0; } .reading-item .info { flex:1; min-width:0; } .reading-item .info h4 { font-size:.95rem; } .reading-item .info .pages { color:var(--muted); font-size:.8rem; } .reading-item .progress-bar { width:130px; margin:0; } .hidden { display:none !important; }
-    @media (max-width:760px) { header { margin:0 10px; padding:14px 16px; align-items:flex-start; flex-direction:column; } nav { width:100%; justify-content:space-between; } nav button { flex:1; padding:7px 6px; } main { padding:24px 16px 42px; } .dashboard-hero { padding:25px 23px; } .stats-grid { grid-template-columns:repeat(2,1fr); } .dashboard-columns { grid-template-columns:1fr; gap:0; } .modal .row { flex-direction:column; gap:0; } }
+    .empty { padding:36px 20px; color:var(--muted); text-align:center; } .reading-item { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:13px 0; border-bottom:1px solid var(--line); } .reading-item:last-child { border-bottom:0; } .reading-item .info { flex:1; min-width:0; } .reading-item .info h4 { font-size:.95rem; } .reading-item .info .pages { color:var(--muted); font-size:.8rem; } .reading-item .progress-bar { width:130px; margin:0; } .dashboard-book-link { width:100%; border:0; background:transparent; color:inherit; cursor:pointer; font:inherit; text-align:left; transition:color .18s ease; } .dashboard-book-link:hover h4 { color:var(--forest); } .tag-link { border:0; cursor:pointer; font:inherit; } .hidden { display:none !important; }
+    .pin-overlay { position:fixed; inset:0; z-index:500; display:grid; place-items:center; padding:24px; background:rgba(18,44,35,.74); backdrop-filter:blur(12px); } .pin-overlay[hidden] { display:none; } .pin-panel { width:min(100%, 390px); padding:34px; background:var(--paper); border:1px solid rgba(255,255,255,.7); border-radius:22px; box-shadow:0 25px 70px rgba(10,28,20,.35); text-align:center; } .pin-mark { display:grid; place-items:center; width:52px; height:52px; margin:0 auto 16px; border-radius:17px; background:var(--sage); color:var(--forest-dark); font-size:1.45rem; } .pin-panel h2 { font-family:Georgia, "Noto Serif TC", serif; font-size:1.45rem; } .pin-panel p { margin:8px 0 21px; color:var(--muted); font-size:.9rem; } .pin-form { display:grid; gap:11px; } .pin-form input { width:100%; padding:12px; border:1px solid #dcd5c8; border-radius:11px; background:#fffefb; color:var(--ink); font:700 1.2rem ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing:.45em; text-align:center; outline:0; } .pin-form input:focus { border-color:var(--forest); box-shadow:0 0 0 3px rgba(31,90,73,.12); } .pin-error { min-height:21px; color:#a5452c; font-size:.82rem; } .pin-form .btn { padding:11px; }
+    @media (max-width:760px) { header { margin:0 10px; padding:14px 16px; align-items:flex-start; flex-direction:column; } .header-actions { width:100%; } nav { width:100%; justify-content:space-between; } nav button { flex:1; padding:7px 6px; } main { padding:24px 16px 42px; } .dashboard-hero { padding:25px 23px; } .stats-grid { grid-template-columns:repeat(2,1fr); } .dashboard-columns { grid-template-columns:1fr; gap:0; } .modal .row { flex-direction:column; gap:0; } }
     @media (max-width:420px) { header h1 { font-size:1.22rem; } nav button { font-size:.77rem; } .filter-bar .btn-primary { width:100%; } .reading-item .progress-bar { width:90px; } }
   </style>
 </head>
@@ -52,12 +56,15 @@
 
 <header>
   <h1><span aria-hidden="true">◒</span> 閱讀日常</h1>
-  <nav>
-    <button data-tab="dashboard" class="active">儀表板</button>
-    <button data-tab="books">書籍</button>
-    <button data-tab="notes">筆記</button>
-    <button data-tab="tags">標籤</button>
-  </nav>
+  <div class="header-actions">
+    <nav>
+      <button data-tab="dashboard" class="active">儀表板</button>
+      <button data-tab="books">書籍</button>
+      <button data-tab="notes">筆記</button>
+      <button data-tab="tags">標籤</button>
+    </nav>
+    <button id="lock-app" class="lock-button hidden" type="button">🔒 鎖定</button>
+  </div>
 </header>
 
 <main>
@@ -205,6 +212,19 @@
   </div>
 </div>
 
+<div class="pin-overlay" id="pin-overlay" role="dialog" aria-modal="true" aria-labelledby="pin-title">
+  <div class="pin-panel">
+    <div class="pin-mark" aria-hidden="true">🔒</div>
+    <h2 id="pin-title">輸入 PIN Code</h2>
+    <p>請輸入 PIN Code 以開啟你的閱讀日常。</p>
+    <form class="pin-form" id="pin-form">
+      <input id="pin-input" type="password" inputmode="numeric" autocomplete="one-time-code" maxlength="6" aria-label="PIN Code" required autofocus>
+      <div id="pin-error" class="pin-error" role="alert"></div>
+      <button class="btn btn-primary" type="submit">解鎖網站</button>
+    </form>
+  </div>
+</div>
+
 <script>
 // GitHub Pages is static, so it uses the production API; local and Render
 // deployments keep the same-origin API for a simpler development setup.
@@ -212,6 +232,47 @@ const API = location.hostname.endsWith('github.io')
   ? 'https://reading-tracker-21do.onrender.com'
   : '';
 const STATUS_LABELS = { want_to_read: '想讀', reading: '閱讀中', completed: '已讀完' };
+const PIN_CODE = '999999';
+const PIN_STORAGE_KEY = 'reading-tracker-unlocked';
+
+const pinOverlay = document.getElementById('pin-overlay');
+const pinForm = document.getElementById('pin-form');
+const pinInput = document.getElementById('pin-input');
+const pinError = document.getElementById('pin-error');
+const lockButton = document.getElementById('lock-app');
+
+function unlockApp() {
+  localStorage.setItem(PIN_STORAGE_KEY, 'true');
+  pinOverlay.hidden = true;
+  lockButton.classList.remove('hidden');
+  pinError.textContent = '';
+  pinInput.value = '';
+}
+
+function lockApp() {
+  localStorage.removeItem(PIN_STORAGE_KEY);
+  pinOverlay.hidden = false;
+  lockButton.classList.add('hidden');
+  pinInput.value = '';
+  pinError.textContent = '';
+  pinInput.focus();
+}
+
+pinForm.addEventListener('submit', event => {
+  event.preventDefault();
+  if (pinInput.value === PIN_CODE) {
+    unlockApp();
+  } else {
+    pinError.textContent = 'PIN Code 不正確，請再試一次。';
+    pinInput.select();
+  }
+});
+
+lockButton.addEventListener('click', lockApp);
+
+if (localStorage.getItem(PIN_STORAGE_KEY) === 'true') {
+  unlockApp();
+}
 
 async function api(path, opts = {}) {
   const res = await fetch(API + path, {
@@ -240,32 +301,47 @@ function tagChips(tags) {
 }
 
 // Tab navigation
-document.querySelectorAll('nav button').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-    document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
-    if (btn.dataset.tab === 'dashboard') loadDashboard();
-    if (btn.dataset.tab === 'books') loadBooks();
-    if (btn.dataset.tab === 'notes') loadNotes();
-    if (btn.dataset.tab === 'tags') loadTags();
+function showTab(tab) {
+  document.querySelectorAll('nav button').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tab);
   });
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+  document.getElementById('tab-' + tab).classList.remove('hidden');
+  if (tab === 'dashboard') loadDashboard();
+  if (tab === 'books') loadBooks();
+  if (tab === 'notes') loadNotes();
+  if (tab === 'tags') loadTags();
+}
+
+document.querySelectorAll('nav button').forEach(btn => {
+  btn.addEventListener('click', () => showTab(btn.dataset.tab));
 });
+
+async function goToBooks({ status = '', tag = '' } = {}) {
+  showTab('books');
+  await loadTagFilter();
+  document.getElementById('book-filter-status').value = status;
+  document.getElementById('book-filter-tag').value = tag;
+  await loadBooks();
+}
+
+function goToNotes() {
+  showTab('notes');
+}
 
 // Dashboard
 async function loadDashboard() {
   const stats = await api('/api/stats');
   const grid = document.getElementById('stats-grid');
   grid.innerHTML = `
-    <div class="stat-box"><div class="num">${stats.total_books}</div><div class="label">總書數</div></div>
-    <div class="stat-box"><div class="num">${stats.by_status.want_to_read}</div><div class="label">想讀</div></div>
-    <div class="stat-box"><div class="num">${stats.by_status.reading}</div><div class="label">閱讀中</div></div>
-    <div class="stat-box"><div class="num">${stats.by_status.completed}</div><div class="label">已讀完</div></div>
-    <div class="stat-box"><div class="num">${stats.completed_this_year}</div><div class="label">今年完成</div></div>
-    <div class="stat-box"><div class="num">${stats.total_pages_read}</div><div class="label">已讀頁數</div></div>
-    <div class="stat-box"><div class="num">${stats.total_notes}</div><div class="label">筆記數</div></div>
-    <div class="stat-box"><div class="num">${stats.avg_rating ?? '—'}</div><div class="label">平均評分</div></div>
+    <button class="stat-box stat-link" type="button" onclick="goToBooks()"><div class="num">${stats.total_books}</div><div class="label">總書數</div></button>
+    <button class="stat-box stat-link" type="button" onclick="goToBooks({status:'want_to_read'})"><div class="num">${stats.by_status.want_to_read}</div><div class="label">想讀</div></button>
+    <button class="stat-box stat-link" type="button" onclick="goToBooks({status:'reading'})"><div class="num">${stats.by_status.reading}</div><div class="label">閱讀中</div></button>
+    <button class="stat-box stat-link" type="button" onclick="goToBooks({status:'completed'})"><div class="num">${stats.by_status.completed}</div><div class="label">已讀完</div></button>
+    <button class="stat-box stat-link" type="button" onclick="goToBooks({status:'completed'})"><div class="num">${stats.completed_this_year}</div><div class="label">今年完成</div></button>
+    <button class="stat-box stat-link" type="button" onclick="goToBooks()"><div class="num">${stats.total_pages_read}</div><div class="label">已讀頁數</div></button>
+    <button class="stat-box stat-link" type="button" onclick="goToNotes()"><div class="num">${stats.total_notes}</div><div class="label">筆記數</div></button>
+    <button class="stat-box stat-link" type="button" onclick="goToBooks({status:'completed'})"><div class="num">${stats.avg_rating ?? '—'}</div><div class="label">平均評分</div></button>
   `;
 
   const cr = document.getElementById('currently-reading');
@@ -273,13 +349,13 @@ async function loadDashboard() {
     cr.innerHTML = '<div class="empty">目前沒有閱讀中的書籍</div>';
   } else {
     cr.innerHTML = stats.currently_reading.map(b => `
-      <div class="reading-item">
+      <button class="reading-item dashboard-book-link" type="button" onclick="openDetail(${b.id})">
         <div class="info">
           <h4>${esc(b.title)}</h4>
           <div class="pages">${b.current_page}/${b.total_pages} 頁 (${b.progress}%)</div>
         </div>
         ${progressBar(b.progress)}
-      </div>
+      </button>
     `).join('');
   }
 
@@ -288,12 +364,12 @@ async function loadDashboard() {
     rc.innerHTML = '<div class="empty">尚無完成的書籍</div>';
   } else {
     rc.innerHTML = stats.recently_completed.map(b => `
-      <div class="reading-item">
+      <button class="reading-item dashboard-book-link" type="button" onclick="openDetail(${b.id})">
         <div class="info">
           <h4>${esc(b.title)} ${b.rating ? '⭐'.repeat(b.rating) : ''}</h4>
           <div class="pages">${esc(b.author)} · ${b.finished_at ? new Date(b.finished_at).toLocaleDateString() : ''}</div>
         </div>
-      </div>
+      </button>
     `).join('');
   }
 
@@ -301,7 +377,7 @@ async function loadDashboard() {
   if (stats.top_tags.length === 0) {
     tt.innerHTML = '<div class="empty">尚無標籤</div>';
   } else {
-    tt.innerHTML = stats.top_tags.map(t => `<span class="tag-chip" style="font-size:0.9rem;padding:4px 14px">${esc(t.name)} (${t.count})</span>`).join(' ');
+    tt.innerHTML = stats.top_tags.map(t => `<button class="tag-chip tag-link" type="button" onclick="goToBooks({tag:decodeURIComponent('${encodeURIComponent(t.name).replace(/'/g, '%27')}')})" style="font-size:0.9rem;padding:4px 14px">${esc(t.name)} (${t.count})</button>`).join(' ');
   }
 }
 
@@ -414,6 +490,7 @@ async function openDetail(id) {
       <button class="btn btn-primary btn-sm" onclick='openBookModal(${JSON.stringify(book).replace(/'/g,"&#39;")})'>編輯</button>
       <button class="btn btn-outline btn-sm" onclick="quickProgress(${book.id}, ${book.current_page}, ${book.total_pages})">更新進度</button>
       <button class="btn btn-success btn-sm" onclick="addNoteForBook(${book.id})">加筆記</button>
+      <button class="btn btn-outline btn-sm" onclick="downloadBookNotes(${book.id})">下載筆記</button>
       <button class="btn btn-danger btn-sm" onclick="deleteBook(${book.id})">刪除</button>
     </div>
 
@@ -450,6 +527,57 @@ function quickProgress(id, current, total) {
 function addNoteForBook(bookId) {
   closeModal('detail-modal');
   openNoteModal(null, bookId);
+}
+
+function yamlValue(value) {
+  return JSON.stringify(String(value ?? ''));
+}
+
+function safeFileName(value) {
+  return String(value ?? '閱讀筆記').replace(/[\\/:*?"<>|]/g, '-').trim() || '閱讀筆記';
+}
+
+function buildBookNotesMarkdown(book, notes) {
+  const tags = book.tags || [];
+  const frontmatterTags = tags.length
+    ? tags.map(tag => `  - ${yamlValue(tag.name)}`).join('\n')
+    : '  - 未分類';
+  const sections = notes
+    .slice()
+    .sort((a, b) => (a.page ?? Number.MAX_SAFE_INTEGER) - (b.page ?? Number.MAX_SAFE_INTEGER))
+    .map(note => `## ${note.page != null ? `第 ${note.page} 頁` : '未標註頁碼'}\n\n${note.content.trim()}\n`)
+    .join('\n');
+  return `---\ntitle: ${yamlValue(book.title)}\nauthor: ${yamlValue(book.author)}\nstatus: ${book.status}\ntags:\n${frontmatterTags}\n---\n\n# ${book.title}\n\n> 作者：${book.author || '未提供'}  \n> 閱讀狀態：${STATUS_LABELS[book.status]}\n\n${sections}`;
+}
+
+async function downloadBookNotes(bookId) {
+  let book;
+  let notes;
+  try {
+    [book, notes] = await Promise.all([
+      api('/api/books/' + bookId),
+      api('/api/notes?book_id=' + bookId),
+    ]);
+  } catch (error) {
+    alert(error.message || '無法取得筆記資料');
+    return;
+  }
+
+  if (!notes.length) {
+    alert('這本書尚無筆記可下載');
+    return;
+  }
+
+  const markdown = buildBookNotesMarkdown(book, notes);
+  const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${safeFileName(book.title)} 筆記.md`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
 }
 
 // Notes
